@@ -75,6 +75,8 @@ def ner_tagging(article, entity_types, libs=['spacy']):
     libs: the libraries to use for chunking, e.g. spacy/stanford, type: list
     OUTPUT:
     NER extracted entities, type: list
+
+    e.g. ner_tagging(some_doc, ['ORG'], ['spacy'])
     '''
     try:
         # extract all name entities
@@ -124,6 +126,8 @@ def extract_finalize_asset(article, keywords, entity_types, ref_build_txt, overl
     reference (extracted from other df columns)
     3: 1st element of noun chunks
     4: no entity identified
+
+    e.g. extract_finalize_asset((some_doc, kw, ['ORG', 'PERSON'], 'something something', 90))
     '''
     try:
         noun_chunks = noun_chunking(article, keywords)
@@ -195,6 +199,8 @@ def extract_finalize_comp(article, entity_types, ref_build_txt, overlap_score_cu
     reference (extracted from other df columns)
     3: 1st element of noun chunks
     4: no entity identified
+
+    extract_finalize_comp((some_doc, ['ORG', 'PERSON'], 'something something', 90))
     '''
     try:
         ner_list = ner_tagging(article, entity_types)
@@ -238,8 +244,11 @@ def final_match(name, canonicals):
     OUTPUT:
     final matching result and match code, tuple:
     matching code dictionary:
-    M: match found in target company list, ideal result
-    E: no match in target list, use extracted entity
+    M-80: match found in target company list using partio fuzzy match with cutoff at 80, ideal result
+    M-10: match found in target company list using token_sort fuzzy match with cutoff at 10 plus substring match
+    no-match: no match in target list, use extracted entity
+
+    e.g. final_match('Chevron', ['Chevron', 'Velory', 'BP'])
     '''
     ent = process.extractOne(name, canonicals,
                                 scorer=fuzz.partial_ratio, score_cutoff=80)

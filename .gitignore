@@ -1,0 +1,11 @@
+.pyc
+result/
+
+# ignore ipython notebooks checkpoints
+.ipynb_checkpoints
+
+# ignore data folder
+data/
+
+# ignore python cache
+__pycache__/

@@ -65,7 +65,7 @@ if __name__ == '__main__':
 
     df_1[['Owner_name_match_code', 'Owner_name_matched']] = df_1['matched_Owner_names'].apply(pd.Series)
 
-    match_rate sum((df_1['Owner_name_match_code']=='M-10')|(df_1['Owner_name_match_code']=='M-80'))*1./167
+    match_rate = sum((df_1['Owner_name_match_code']=='M-10')|(df_1['Owner_name_match_code']=='M-80'))*1./167
     print 'Owner_name EPIX match rate: {}'.format(match_rate)
 
     df_1.drop(['extracted_Owner_names', 'matched_Owner_names'], axis=1, inplace = True)

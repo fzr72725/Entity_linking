@@ -252,8 +252,8 @@ def final_match(name, canonicals):
     '''
     ent = process.extractOne(name, canonicals,
                                 scorer=fuzz.partial_ratio, score_cutoff=80)
-    #if ent is not None:
-        #return 'M-80', ent[0]
+    if ent is not None:
+        return 'M-80', ent[0]
     # If high score cut off gives no match, lower score, and do other checks
     #else:
     if ent is None:

@@ -9,7 +9,7 @@ import Entity_linking as em
 
 if __name__ == '__main__':
     df_orig = pd.read_excel('Entity_linking/data/Energy_newsdb_refineries_minhash_SDZ.xlsx')
-    df_1 = df_orig[df_orig['Refinery'] == 'Y'][:3]#[['Article_Number','Text','Title','Owner']]
+    df_1 = df_orig[df_orig['Refinery'] == 'Y']#[['Article_Number','Text','Title','Owner']]
 
     df_ref = pd.read_excel('Entity_linking/data/EPIX_Asset_Details_original.xls')
     df_ref = df_ref[['OperatorName', 'refineryName']]
@@ -37,17 +37,17 @@ if __name__ == '__main__':
 
     df_1[['Asset_name_match_code', 'Asset_name_matched']] = df_1['matched_asset_names'].apply(pd.Series)
 
-    print sum(df_1['Asset_name_match_code']=='M')*1./167
+    match_rate = sum((df_1['Asset_name_match_code']=='M-10')|(df_1['Asset_name_match_code']=='M-80'))*1./167
+    print 'Asset_name EPIX match rate: {}'.format(match_rate)
 
     df_1.drop(['extracted_asset_names', 'matched_asset_names'], axis=1, inplace = True)
-    now = datetime.datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
-    writer = pd.ExcelWriter('result/example_asset_result_{}.xlsx'.replace('\\', os.sep).format(now))
-    df_1.to_excel(writer, 'Energy', index=False)
-    writer.save()
+    #now = datetime.datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
+    #writer = pd.ExcelWriter('result/example_asset_result_{}.xlsx'.replace('\\', os.sep).format(now))
+    #df_1.to_excel(writer, 'Energy', index=False)
+    #writer.save()
 
-    '''
+
     # Generate Owner
-    df_1 = df_orig[df_orig['Refinery'] == 'Y'][:3]
     company_list = df_ref.OperatorName.values
     print 'Extracting company names...'
     start = time.time()
@@ -65,11 +65,11 @@ if __name__ == '__main__':
 
     df_1[['Owner_name_match_code', 'Owner_name_matched']] = df_1['matched_Owner_names'].apply(pd.Series)
 
-    #print sum(df_1['Owner_name_match_code']=='M')*1./167
+    match_rate sum((df_1['Owner_name_match_code']=='M-10')|(df_1['Owner_name_match_code']=='M-80'))*1./167
+    print 'Owner_name EPIX match rate: {}'.format(match_rate)
 
     df_1.drop(['extracted_Owner_names', 'matched_Owner_names'], axis=1, inplace = True)
     now = datetime.datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
-    writer = pd.ExcelWriter('result/example_owner_result_{}.xlsx'.replace('\\', os.sep).format(now))
+    writer = pd.ExcelWriter('result/Owner_AssetName_result_{}.xlsx'.replace('\\', os.sep).format(now))
     df_1.to_excel(writer, 'Energy', index=False)
     writer.save()
-    '''

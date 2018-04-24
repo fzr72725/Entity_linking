@@ -9,7 +9,9 @@ import Entity_linking as em
 
 if __name__ == '__main__':
     df_orig = pd.read_excel('result/improve_2018-04-23-10-13-20.xlsx')
+    #df_orig = pf.read_excel('Entity_linking/data/Energy_newsdb_refineries_minhash_SDZ')
     df_1 = df_orig[df_orig['Refinery'] == 'Y']#[['Article_Number','Text','Title','Owner']]
+    #df_1 = df_1[df_1['Article_Number']==154695]
 
     df_ref = pd.read_excel('Entity_linking/data/EPIX_Asset_Details_original.xls')
     df_ref = df_ref[['OperatorName', 'refineryName']]
@@ -36,7 +38,7 @@ if __name__ == '__main__':
 
     df_1[['Asset_name_match_code', 'Asset_name_matched']] = df_1['matched_asset_names'].apply(pd.Series)
 
-    match_rate = sum((df_1['Asset_name_match_code']=='M-10')|(df_1['Asset_name_match_code']=='M-80'))*1./167
+    match_rate = sum((df_1['Asset_name_match_code']!='no-match'))*1./167
     print 'Asset_name EPIX match rate: {}'.format(match_rate)
 
     df_1.drop(['extracted_asset_names', 'matched_asset_names'], axis=1, inplace = True)
@@ -64,7 +66,7 @@ if __name__ == '__main__':
 
     df_1[['Owner_name_match_code', 'Owner_name_matched']] = df_1['matched_Owner_names'].apply(pd.Series)
 
-    match_rate = sum((df_1['Owner_name_match_code']=='M-10')|(df_1['Owner_name_match_code']=='M-80'))*1./167
+    match_rate = sum((df_1['Owner_name_match_code']!='no-match'))*1./167
     print 'Owner_name EPIX match rate: {}'.format(match_rate)
 
     df_1.drop(['extracted_Owner_names', 'matched_Owner_names'], axis=1, inplace = True)

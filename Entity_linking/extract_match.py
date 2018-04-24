@@ -56,12 +56,14 @@ def noun_chunking(article, keywords, libs=['spacy']):
                 # should be the beginning of the actual relevant noun
                 if (word.tag_ == "NNP")&(word.text[0].isupper()):
                     flag = True
-                    idx_word = word.text
+                    idx_char = word.text[0]
                     break
+            #print 'broke!', idx_word
             # store noun chunk with proper noun in a new list relevant_nouns
             if flag:
                 # because some nouns has ' in it, here we use regex to split the original noun
-                relevant_nouns.append(' '.join(noun.split()[re.split(' |\'',noun).index(idx_word):]))
+                #relevant_nouns.append(' '.join(noun.split()[re.split(' |\'',noun).index(idx_word):]))
+                relevant_nouns.append(noun[noun.index(idx_char):])
         return relevant_nouns
 
     except Exception as error:
@@ -254,33 +256,37 @@ def extract_finalize_comp(article, entity_types, ref_build_txt, overlap_score_cu
         return "Error Occured"
 
 
-def final_match(name, canonicals):
+def final_match(name, canonicals, cutoff=80):
     '''
     This function uses fuzzy match to determine if an article has matching entity in
     the target company list
     INPUT:
     name: entity extracted from an article, type: string
     canonicals: the dictionary of company list to be matched with, type: list
+    cutoff: the cutoff fuzzy matching score, type: int, default=80
 
     OUTPUT:
     final matching result and match code, tuple:
     matching code dictionary:
-    M-80: match found in target company list using partio fuzzy match with cutoff at 80, ideal result
-    M-10: match found in target company list using token_sort fuzzy match with cutoff at 10 plus substring match
+    M-XX: match found in target company list using partio fuzzy match with cutoff
     no-match: no match in target list, use extracted entity
 
     e.g. final_match('Chevron', ['Chevron', 'Velory', 'BP'])
     '''
 
     # remove the domain stopwords to avoid meaningless match on this word
-    stop_words = 'Refinery|refinery|Refiner|refiner|Petroleum|petroleum|and|oil|Oil|pipeline|Pipeline'
+    stop_words = "Refinery|refinery|Refiner|refiner|refining|Refining|Petroleum|petroleum|and|\
+                  oil|Oil|pipeline|Pipeline|Corp|corp|Energy|energy|US|'s"
     name = re.sub(stop_words, '', name)
     matches = process.extract(name, canonicals)
     if matches:
         # sort matches by fuzzy score desc
         matches.sort(key=lambda tup: (tup[1]), reverse=True)
-        #return matches[0]
-        return 'M-{}'.format(matches[0][1]), matches[0][0]
+        # depending on the matching result, set cutoff line here
+        if matches[0][1] > cutoff:
+            return 'M-{}'.format(matches[0][1]), matches[0][0]
+        else:
+            return 'no match', None
     else:
         return 'no match', None
 

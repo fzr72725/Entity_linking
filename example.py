@@ -8,7 +8,7 @@ import Entity_linking as em
 
 
 if __name__ == '__main__':
-    df_orig = pd.read_excel('Entity_linking/data/Energy_newsdb_refineries_minhash_SDZ.xlsx')
+    df_orig = pd.read_excel('result/improve_2018-04-23-10-13-20.xlsx')
     df_1 = df_orig[df_orig['Refinery'] == 'Y']#[['Article_Number','Text','Title','Owner']]
 
     df_ref = pd.read_excel('Entity_linking/data/EPIX_Asset_Details_original.xls')
@@ -28,7 +28,6 @@ if __name__ == '__main__':
     end = time.time()
     time_intervale = end - start
     print("---extract took {} seconds ---".format(time_intervale))
-
     df_1[['Asset_name_extract_code', 'Asset_name_extracted']] \
                                         = df_1['extracted_asset_names'].apply(pd.Series)
     print 'Matching refinery names against EPIX lists...'

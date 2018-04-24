@@ -43,6 +43,7 @@ def noun_chunking(article, keywords, libs=['spacy']):
         relevant_nouns = []
         for noun in keyword_nouns:
             flag = False
+            idx_word = ''
             words = re.split('('+keywords+')', noun,  flags=re.IGNORECASE)
             # the first two words are which the most likely to be proper nouns
             # if exist
@@ -50,11 +51,17 @@ def noun_chunking(article, keywords, libs=['spacy']):
             # here we only use spaCy to generate the syntactic tags
             doc = nlp(phrase1)
             for word in doc:
-                if word.tag_ == "NNP":
+                # if a word is NNP and is beginning with upper case letter
+                # the noun is relevant, and the word with the first upper case letter
+                # should be the beginning of the actual relevant noun
+                if (word.tag_ == "NNP")&(word.text[0].isupper()):
                     flag = True
+                    idx_word = word.text
+                    break
             # store noun chunk with proper noun in a new list relevant_nouns
             if flag:
-                relevant_nouns.append(noun)
+                # because some nouns has ' in it, here we use regex to split the original noun
+                relevant_nouns.append(' '.join(noun.split()[re.split(' |\'',noun).index(idx_word):]))
         return relevant_nouns
 
     except Exception as error:
@@ -88,11 +95,15 @@ def ner_tagging(article, entity_types, libs=['spacy']):
                 ents = list(parsedEx.ents)
                 # ner = []
                 for entity in ents:
-                    if entity.label_ in entity_types:
-                        # pick the desired entity type into list ner
-                        ner.append(' '.join(t.orth_ for t in entity))
-                    elif entity_types == 'no-specific':
-                        ner.append(' '.join(t.orth_ for t in entity))
+                    # set hard rule to exclude US from candidate entities
+                    if entity.orth_ not in ['US', 'U.S.']:
+                        if entity.label_ in entity_types:
+                            # pick the desired entity type into list ner
+                            #ner.append(' '.join(t.orth_ for t in entity))
+                            ner.append(entity.orth_)
+                        elif entity_types == 'no-specific':
+                            #ner.append(' '.join(t.orth_ for t in entity))
+                            ner.append(entity.orth_)
             elif lib == 'stanford':
                     pass
         return ner
@@ -138,6 +149,11 @@ def extract_finalize_asset(article, keywords, entity_types, ref_build_txt, overl
         # the 1st highest confidence
         best = []
         full_list = list(set(noun_chunks + ner_list))
+        #manual_remove = ['U.S. refinery workers']
+        # remove hard rule exclude entities
+        #for i in manual_remove:
+            #if i in full_list:
+                #full_list.remove(i)
         for name in full_list:
             ent = process.extractOne(name, name_ref,
                                     scorer=fuzz.partial_ratio, score_cutoff=overlap_score_cutoff)
@@ -210,6 +226,11 @@ def extract_finalize_comp(article, entity_types, ref_build_txt, overlap_score_cu
         # the 1st highest confidence
         best = []
         full_list = list(set(ner_list))
+        #manual_remove = ['U.S. refinery workers']
+        # remove hard rule exclude entities
+        #for i in manual_remove:
+            #if i in full_list:
+                #full_list.remove(i)
         for name in full_list:
             ent = process.extractOne(name, name_ref,
                                     scorer=fuzz.partial_ratio, score_cutoff=overlap_score_cutoff)
@@ -250,15 +271,30 @@ def final_match(name, canonicals):
 
     e.g. final_match('Chevron', ['Chevron', 'Velory', 'BP'])
     '''
+
+    # remove the domain stopwords to avoid meaningless match on this word
+    stop_words = 'Refinery|refinery|Refiner|refiner|Petroleum|petroleum|and|oil|Oil|pipeline|Pipeline'
+    name = re.sub(stop_words, '', name)
+    matches = process.extract(name, canonicals)
+    if matches:
+        # sort matches by fuzzy score desc
+        matches.sort(key=lambda tup: (tup[1]), reverse=True)
+        #return matches[0]
+        return 'M-{}'.format(matches[0][1]), matches[0][0]
+    else:
+        return 'no match', None
+
+
+    '''
     ent = process.extractOne(name, canonicals,
-                                scorer=fuzz.partial_ratio, score_cutoff=80)
+                                scorer=fuzz.partial_ratio, score_cutoff=90)
     if ent is not None:
-        return 'M-80', ent[0]
+        return 'M-90', ent[0]
     # If high score cut off gives no match, lower score, and do other checks
     #else:
     if ent is None:
         ent = process.extractOne(name, canonicals,
-                                scorer=fuzz.token_sort_ratio, score_cutoff=10)
+                                scorer=fuzz.token_sort_ratio, score_cutoff=20)
         # validate the match result using substring
         if ent:
             matched_clean_ent = ent[0].lower().replace(' ', '')
@@ -266,6 +302,7 @@ def final_match(name, canonicals):
             if (clean_ent not in matched_clean_ent) and (matched_clean_ent not in clean_ent):
                 ent = None
     if ent is not None:
-        return 'M-10', ent[0]
+        return 'M-20', ent[0]
     else:
         return 'no match', None
+    '''

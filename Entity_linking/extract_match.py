@@ -276,7 +276,8 @@ def final_match(name, canonicals, cutoff=80):
 
     # remove the domain stopwords to avoid meaningless match on this word
     stop_words = "Refinery|refinery|Refiner|refiner|refining|Refining|Petroleum|petroleum|and|\
-                  oil|Oil|pipeline|Pipeline|Corp|corp|Energy|energy|US|'s"
+                  oil|Oil|pipeline|Pipeline|Corp|corp|Energy|energy|US|'s|plant\
+                  |Partners|partners|Co.|co.|Company|company|Refineries|refineries"
     name = re.sub(stop_words, '', name)
     matches = process.extract(name, canonicals)
     if matches:
@@ -286,9 +287,9 @@ def final_match(name, canonicals, cutoff=80):
         if matches[0][1] > cutoff:
             return 'M-{}'.format(matches[0][1]), matches[0][0]
         else:
-            return 'no match', None
+            return 'no-match', None
     else:
-        return 'no match', None
+        return 'no-match', None
 
 
     '''
